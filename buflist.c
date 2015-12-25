@@ -18,18 +18,20 @@ void _debug_output(buflist_t* l)
 
 buflist_t* buflist_new()
 {
-    buflist_t* ret = malloc(sizeof(buflist_t) + DEFAULT_BUFSIZE);
+    buflist_t* ret = malloc(sizeof(buflist_t));
     ret->size = 0;
     ret->len = 0;
     ret->alloc = DEFAULT_BUFSIZE;
+    ret->buf = malloc(DEFAULT_BUFSIZE);
     return ret;
 }
 
 buflist_t* buflist_new_from_buf(const unsigned char* buf, uint32_t sz)
 {
-    buflist_t* ret = malloc(sizeof(buflist_t) + sz);
+    buflist_t* ret = malloc(sizeof(buflist_t));
     ret->size = sz;
     ret->alloc = sz;
+    ret->buf = malloc(sz);
     ret->len = 0;
     memcpy(ret->buf, buf, sz);
     unsigned char* h = ret->buf;
@@ -42,28 +44,32 @@ buflist_t* buflist_new_from_buf(const unsigned char* buf, uint32_t sz)
 
 uint32_t buflist_len(buflist_t* l) { return l->len; }
 
-void buflist_push(buflist_t** l, unsigned char* buf, uint32_t size)
+void buflist_push(buflist_t* l, unsigned char* buf, uint32_t size)
 {
     int i;
-    int new_size = (*l)->size + size + sizeof(uint32_t);
-    if (new_size > (*l)->alloc) {
+    int new_size = l->size + size + sizeof(uint32_t);
+    if (new_size > l->alloc) {
         // realloc
-        *l = realloc(*l, new_size * 2);
-        (*l)->alloc = new_size * 2;
+        unsigned char* tmp = malloc(new_size * 2);
+        // memmove
+        memcpy(tmp, l->buf, l->size);
+        free(l->buf);
+        l->buf = tmp;
     }
     // move to buf's tail
-    unsigned char* h = (*l)->buf + (*l)->size;
+    unsigned char* h = l->buf + l->size;
     // write node data
     memcpy(h, &size, sizeof(uint32_t));
     memcpy(h + sizeof(uint32_t), buf, size);
     // update new meta
-    (*l)->size = new_size;
-    (*l)->len++;
+    l->size = new_size;
+    l->len++;
 }
 
 void buflist_free(buflist_t* l)
 {
     if (l != NULL) {
+        free(l->buf);
         free(l);
     }
 }

@@ -9,7 +9,7 @@ typedef struct buflist_t {
     uint32_t size;
     uint32_t len;
     uint32_t alloc;
-    unsigned char buf[];
+    unsigned char* buf;
 } buflist_t;
 
 typedef struct buflist_iter_t {
@@ -22,7 +22,7 @@ buflist_t* buflist_new();
 // create new buflist from exist buf
 buflist_t* buflist_new_from_buf(const unsigned char* buf, uint32_t sz);
 
-void buflist_push(buflist_t** l, unsigned char* buf, uint32_t size);
+void buflist_push(buflist_t* l, unsigned char* buf, uint32_t size);
 uint32_t buflist_len(buflist_t* l);
 void buflist_free(buflist_t* l);
 

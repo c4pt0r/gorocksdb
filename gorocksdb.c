@@ -112,14 +112,14 @@ void multi_seek(void* iter, const unsigned char* buf, const size_t buf_sz,
             unsigned char* val
                 = (unsigned char*)rocksdb_iter_value(it, &val_sz);
             if (key != NULL && val != NULL) {
-                buflist_push(&ret_keys, key, key_sz);
-                buflist_push(&ret_vals, val, val_sz);
+                buflist_push(ret_keys, key, key_sz);
+                buflist_push(ret_vals, val, val_sz);
             }
         }
         else {
             unsigned char s[] = "\0";
-            buflist_push(&ret_keys, s, 1);
-            buflist_push(&ret_vals, s, 1);
+            buflist_push(ret_keys, s, 1);
+            buflist_push(ret_vals, s, 1);
         }
     }
     *ret_key_buf = ret_keys->buf;
