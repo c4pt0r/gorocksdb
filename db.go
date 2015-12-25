@@ -2,6 +2,7 @@ package gorocksdb
 
 // #include <stdlib.h>
 // #include "rocksdb/c.h"
+// #include "gorocksdb.h"
 import "C"
 
 import (
@@ -343,6 +344,22 @@ func (self *DB) Merge(opts *WriteOptions, key []byte, value []byte) error {
 	}
 
 	return nil
+}
+
+func (self *DB) MultiSeek(it *Iterator, keys [][]byte) ([][]byte, [][]byte) {
+	var retKeyBuf, retValBuf *C.uchar
+	var retKeySz, retValSz C.size_t
+	// construct buflist
+	var buf []byte
+	for _, k := range keys {
+		buf = appendBuf(buf, k)
+	}
+
+	C.multi_seek(unsafe.Pointer(it.c), byteToUChar(buf), C.size_t(len(buf)), &retKeyBuf, &retKeySz, &retValBuf, &retValSz)
+
+	retKeys := ucharToByte(retKeyBuf, retKeySz)
+	retVals := ucharToByte(retValBuf, retValSz)
+	return unpackBuflist(retKeys), unpackBuflist(retVals)
 }
 
 // MergeCF merges the data associated with the key with the actual data in the
